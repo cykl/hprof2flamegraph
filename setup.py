@@ -49,5 +49,6 @@ setup(
             'main = hprof2flamegraph:main',
         ]
     },
+    test_suite = 'nose.collector'
 )
 
