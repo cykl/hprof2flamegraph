@@ -24,6 +24,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from setuptools import setup
+import sys
+
+install_requires=[]
+if sys.version_info < (2, 7):
+    install_requires += ['argparse']
+
 
 setup(
     name="hprof2flamegraph",
@@ -43,6 +49,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Topic :: Software Development",
     ],
+    install_requires=install_requires,
     py_modules=["hprof2flamegraph"],
     entry_points={
         'console_scripts': [
