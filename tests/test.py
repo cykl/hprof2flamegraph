@@ -69,6 +69,9 @@ class TestHeader(unittest.TestCase):
         header = "JAVA PROFILE 1.0.1, created Fri Jun 14 01:18:27 2013"
         self.assertTrue(header_match(header))
 
+	header = "JAVA PROFILE 1.0.1, created Wed Jul  3 20:50:41 2013"
+        self.assertTrue(header_match(header))
+
     def test_header_match_ko(self):
         header = "#! /user/bin/python"
         self.assertFalse(header_match(header))

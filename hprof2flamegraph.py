@@ -61,7 +61,7 @@ def get_file_content(filename):
 
 def header_match(line):
     """ Return True if line match the HPROF header line, False otherwise"""
-    pattern = 'JAVA PROFILE \d.\d.\d, created \w+ \w+ \d+ \d{2}:\d{2}:\d{2} \d{4}'
+    pattern = 'JAVA PROFILE \d.\d.\d, created \w+ \w+ +\d+ \d{2}:\d{2}:\d{2} \d{4}'
     return re.match(pattern, line) is not None
 
 
