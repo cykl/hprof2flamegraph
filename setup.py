@@ -56,6 +56,7 @@ setup(
             'main = hprof2flamegraph:main',
         ]
     },
+    scripts=['flamegraph.pl'],
     test_suite = 'nose.collector'
 )
 
