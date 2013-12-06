@@ -53,7 +53,7 @@ setup(
     py_modules=["hprof2flamegraph"],
     entry_points={
         'console_scripts': [
-            'main = hprof2flamegraph:main',
+            'hprof2flamegraph = hprof2flamegraph:main',
         ]
     },
     scripts=['flamegraph.pl'],
