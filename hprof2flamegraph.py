@@ -84,15 +84,30 @@ def remove_unknown_lineno(stack_element, discard_lineno=False):
             match_object.group('line'))
 
 
-def _process_stack(stack, discard_lineno=False):
+def abbreviate_package(stack_line):
+    """ Abbreviate the package from a stack line: foo.bar.Class.method -> f.b.Class.method
+
+    In a package name cannot be found the string is unchanged
+    """
+    match_object = re.match(r'(?P<package>.*\.)(?P<remainder>[^.]+\.[^.]+)$', stack_line)
+    if match_object is None:
+        return stack_line
+
+    shortened_pkg = re.sub(r'(\w)\w*', r'\1', match_object.group('package'))
+    return "%s%s" % (shortened_pkg, match_object.group('remainder'))
+
+
+def _process_stack(stack, discard_lineno=False, shorten_pkgs=False):
     """ Process an HPROF stack to only get meaningful content"""
     stack = stack.split('\n')
     stack = [line.strip() for line in stack if line]
     stack = [remove_unknown_lineno(line, discard_lineno) for line in stack]
+    if shorten_pkgs:
+        stack = [abbreviate_package(line) for line in stack]
     return stack
 
 
-def get_stacks(content, discard_lineno=False, discard_thread=False):
+def get_stacks(content, discard_lineno=False, discard_thread=False, shorten_pkgs=False):
     """ Get the stack traces from an hprof file. Return a dict indexed by trace ID. """
     stacks = {}
 
@@ -100,7 +115,7 @@ def get_stacks(content, discard_lineno=False, discard_thread=False):
     match_objects = re.finditer(pattern, content, re.M)
     for match_object in match_objects:
         trace_id  = match_object.group('trace_id')
-        stack     = _process_stack(match_object.group('stack'), discard_lineno)
+        stack     = _process_stack(match_object.group('stack'), discard_lineno, shorten_pkgs)
         thread_id = match_object.group('thread_id')
         if thread_id and not discard_thread:
             stack.append("Thread {0}".format(thread_id))
@@ -159,6 +174,7 @@ def main(argv=None, out=sys.stdout):
     parser.add_argument('hprof_file', metavar='FILE', type=str, nargs=1, help='An HPROF file')
     parser.add_argument('--discard-lineno', dest='discard_lineno', action='store_true', help='Remove line numbers')
     parser.add_argument('--discard-thread', dest='discard_thread', action='store_true', help='Remove thread information')
+    parser.add_argument('--shorten-pkgs', dest='shorten_pkgs', action='store_true', help='Shorten package names')
 
     args = parser.parse_args(argv)
     filename = args.hprof_file[0]
@@ -170,7 +186,7 @@ def main(argv=None, out=sys.stdout):
     if is_tracing(content):
         sys.exit('CPU tracing is not supported. Please use sampling.')
 
-    stacks = get_stacks(content, args.discard_lineno, args.discard_thread)
+    stacks = get_stacks(content, args.discard_lineno, args.discard_thread, args.shorten_pkgs)
     if not stacks:
         sys.exit('Failed to get TRACE')
 
