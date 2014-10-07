@@ -38,14 +38,16 @@ latter step if needed. You never have too much information.
 
   java -agentlib:hprof=cpu=samples,depth=100,interval=1ms,lineno=y,thread=y,file=output.hprof[...]
 
-Secondly, use `hprof2flamegraph` to convert the HPROF output 
+Secondly, use `stackcollapse-hprof` to convert the HPROF output 
 into the folded stacks format.
 
 .. code-block:: bash
 
-  hprof2flamegraph output.hprof > output-folded.txt
+  stackcollapse-hprof output.hprof > output-folded.txt
 
-Finally, use `flamegraph.pl` to create the final SVG graph.
+Finally, use `flamegraph.pl` to create the final SVG graph. You can either use
+the `flamegraph.pl` shipped with this module or the one from Brendan's project.
+They are the same. It is only shipped with `hprof2flamegraph` by convenience.
 
 .. code-block:: bash
 
@@ -76,7 +78,7 @@ The easiest way to install `hprof2flamgegraph` is to use the
 
         pip install [--user] hprof2flamegraph
 
-It installs a `hprof2flamegraph` script into the `bin` directory of your
+It installs a `stackcollapse-hprof` script into the `bin` directory of your
 environment. Make sure this directory is in your `PATH`. The original
 `flamegraph.pl` script from Brendan is also installed (CDDL licensed). 
 

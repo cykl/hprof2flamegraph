@@ -42,7 +42,7 @@ still have to be run to create the final graph.
 Usage example:
 ::
     java -agentlib:hprof=file=output.hprof,cpu=samples,depth=100,interval=10,lineno=y,thread=y [...]
-    hprof2flamegraph output.hprof | flamegraph.pl > graph.svg
+    stackcollapse-hprof output.hprof | flamegraph.pl > graph.svg
 
 """
 
