@@ -38,13 +38,13 @@ from hprof2flamegraph import *
 REF_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ref')
 
 
-def get_ref_file(withLineno, withThread):
-    lineno = 'y' if withLineno else 'n'
-    thread = 'y' if withThread else 'n'
+def get_ref_file(with_lineno, with_thread):
+    lineno = 'y' if with_lineno else 'n'
+    thread = 'y' if with_thread else 'n'
     return os.path.join(
         REF_DIR,
-        'cpu=samples,depth=100,interval=10,lineno={0},thread={1}.hprof.txt'
-        .format(lineno, thread))
+        'cpu=samples,depth=100,interval=10,lineno={0},thread={1}.hprof.txt'.format(lineno, thread)
+    )
 
 
 refs = {
@@ -120,6 +120,7 @@ class TestParsing(unittest.TestCase):
         content = get_file_content(filename)
         counts = get_counts(content)
         self.assertEquals(0, len(counts))
+
 
 class TestStack(unittest.TestCase):
 
