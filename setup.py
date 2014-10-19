@@ -26,7 +26,7 @@
 from setuptools import setup
 import sys
 
-install_requires=[]
+install_requires = []
 if sys.version_info < (2, 7):
     install_requires += ['argparse']
 
@@ -58,6 +58,5 @@ setup(
         ]
     },
     scripts=['flamegraph.pl'],
-    test_suite = 'nose.collector'
+    test_suite='nose.collector'
 )
-
