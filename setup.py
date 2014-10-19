@@ -53,7 +53,7 @@ setup(
     py_modules=["hprof2flamegraph"],
     entry_points={
         'console_scripts': [
-            'stackcollapse-hprof = hprof2flamegraph:main',
+            'stackcollapse-hprof = stackcollapse_hprof:main',
         ]
     },
     scripts=['flamegraph.pl'],

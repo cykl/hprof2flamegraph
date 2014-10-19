@@ -35,7 +35,7 @@ except ImportError:
 
 from hprof2flamegraph import *
 
-REF_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ref')
+REF_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ref', 'hprof')
 
 
 def get_ref_file(with_lineno, with_thread):
