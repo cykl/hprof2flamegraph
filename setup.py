@@ -54,6 +54,7 @@ setup(
     entry_points={
         'console_scripts': [
             'stackcollapse-hprof = stackcollapse_hprof:main',
+            'stackcollapse-hpl = stackcollapse_hpl:main',
         ]
     },
     scripts=['flamegraph.pl'],
