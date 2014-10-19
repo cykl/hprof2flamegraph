@@ -53,7 +53,9 @@ def parse_hpl(filename):
                 break
 
             (marker,) = struct.unpack('>b', marker_str)
-            if marker == 1:
+            if marker == 0:
+                break
+            elif marker == 1:
                 (frame_count, thread_id) = struct.unpack('>iQ', fh.read(4 + 8))
                 traces.append(Trace(thread_id, frame_count, []))
             elif marker == 2:
@@ -67,7 +69,7 @@ def parse_hpl(filename):
                 method_name = parse_hpl_string(fh)
                 methods[method_id] = Method(method_id, file_name, class_name, method_name)
             else:
-                raise Exception("Unexpected marker: %s" % marker)
+                raise Exception("Unexpected marker: %s at offset %s" % (marker, fh.tell()))
 
     return traces, methods
 
