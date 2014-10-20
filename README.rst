@@ -8,13 +8,13 @@ A few years ago, Brendan Gregg created the `flame graph visualization`_. He desc
 quickly and accurately*. More pragmatically, it is a great way to identify the hot spots of
 an application and to understand its runtime behavior.
 
-The FlameGraph_ project provides a main script to create SVG files from a pivot format called
-*folded stacks* and several scripts to convert a profiler proprietary output format into folded
-stacks.
+The FlameGraph_ project provides a `flamegraph.pl` script to create SVG files
+from a pivot format called *folded stacks*, and several scripts to convert the
+proprietary output of various profilers (perf, DTrace etc.) into folded stacks.
 
-This project provides conversion scripts for several Java profilers and repackage
-the *flamegraph.pl* script only for convenience. These scripts are not in the upstream project
-mostly because they are written in Python and not in Perl.
+This project aims to provide conversion scripts for several Java profilers.
+These scripts are not pushed in the official project mostly because they are written
+in Python and not in Perl.
 
 Supported profilers are:
 
