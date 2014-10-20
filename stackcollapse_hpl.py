@@ -39,7 +39,7 @@ Frame = collections.namedtuple('Frame', ['line_no', 'method_id'])
 def parse_hpl_string(fh):
     (length,) = struct.unpack('>i', fh.read(4))
     (val,) = struct.unpack('>%ss' % length, fh.read(length))
-    return val
+    return val.decode('utf-8')
 
 
 def parse_hpl(filename):
@@ -49,7 +49,7 @@ def parse_hpl(filename):
     with open(filename, 'rb') as fh:
         while True:
             marker_str = fh.read(1)
-            if marker_str == '':
+            if not marker_str:
                 break
 
             (marker,) = struct.unpack('>b', marker_str)
@@ -89,9 +89,9 @@ def format_frame(frame, method, discard_lineno, shorten_pkgs):
         class_name = abbreviate_package(class_name)
 
     formatted_frame = class_name
-    formatted_frame += "." + method.method_name
+    formatted_frame += '.' + method.method_name
     if not discard_lineno:
-        formatted_frame += ":" + str(frame.line_no)
+        formatted_frame += ':' + str(frame.line_no)
     return formatted_frame
 
 
@@ -123,10 +123,11 @@ def main(argv=None, out=sys.stdout):
         if not args.discard_thread:
             frames.append('Thread %s' % trace.thread_id)
 
-        folded_stack = ";".join(reversed(frames))
+        folded_stack = ';'.join(reversed(frames))
         folded_stacks[folded_stack] += 1
 
-    for folded_stack, sample_count in folded_stacks.iteritems():
+    for folded_stack in folded_stacks:
+        sample_count = folded_stacks[folded_stack]
         print("%s %s" % (folded_stack, sample_count), file=out)
 
     return 0
