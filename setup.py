@@ -50,7 +50,7 @@ setup(
         "Topic :: Software Development",
     ],
     install_requires=install_requires,
-    py_modules=["hprof2flamegraph"],
+    py_modules=["stackcollapse_hprof", "stackcollapse_hpl"],
     entry_points={
         'console_scripts': [
             'stackcollapse-hprof = stackcollapse_hprof:main',
