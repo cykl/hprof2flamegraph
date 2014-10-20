@@ -33,7 +33,7 @@ except ImportError:
     # Python 3
     from io import StringIO
 
-from hprof2flamegraph import *
+from stackcollapse_hprof import *
 
 REF_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ref', 'hprof')
 
