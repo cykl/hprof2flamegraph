@@ -3,6 +3,9 @@
 Java flame graphs
 *****************
 
+.. image:: https://travis-ci.org/cykl/hprof2flamegraph.svg?branch=master
+    :target: https://travis-ci.org/cykl/hprof2flamegraph
+
 A few years ago, Brendan Gregg created the `flame graph visualization`_. He describes it as
 *a visualization of profiled software, allowing the most frequent code-paths to be identified
 quickly and accurately*. More pragmatically, it is a great way to identify the hot spots of
