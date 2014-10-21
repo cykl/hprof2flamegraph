@@ -33,18 +33,18 @@ except ImportError:
     # Python 3
     from io import StringIO
 
-from hprof2flamegraph import *
+from stackcollapse_hprof import *
 
-REF_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ref')
+REF_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ref', 'hprof')
 
 
-def get_ref_file(withLineno, withThread):
-    lineno = 'y' if withLineno else 'n'
-    thread = 'y' if withThread else 'n'
+def get_ref_file(with_lineno, with_thread):
+    lineno = 'y' if with_lineno else 'n'
+    thread = 'y' if with_thread else 'n'
     return os.path.join(
         REF_DIR,
-        'cpu=samples,depth=100,interval=10,lineno={0},thread={1}.hprof.txt'
-        .format(lineno, thread))
+        'cpu=samples,depth=100,interval=10,lineno={0},thread={1}.hprof.txt'.format(lineno, thread)
+    )
 
 
 refs = {
@@ -175,6 +175,21 @@ class TestStack(unittest.TestCase):
         stacks = get_stacks(stack, discard_thread=True)
         self.assertEquals(1, len(stacks))
         self.assertEquals(2, len(stacks['301000']))
+
+    def test_abbreviate_package(self):
+        self.assertEqual('f.b.Class.method', abbreviate_package("foo.bar.Class.method"))
+
+    def test_shorten_pkgs(self):
+        stack = "\n".join([
+            'TRACE 301000: (thread=200001)',
+            '\tjava.lang.ClassLoader.defineClass1(ClassLoader.java:Unknown line)',
+            '\tjava.lang.ClassLoader.defineClass(ClassLoader.java:791)',
+            ''
+        ])
+        stacks = get_stacks(stack, discard_thread=False, shorten_pkgs=True)
+        self.assertEquals("j.l.ClassLoader.defineClass1", stacks['301000'][0])
+        self.assertEquals("j.l.ClassLoader.defineClass:791", stacks['301000'][1])
+        self.assertEquals("Thread 200001", stacks['301000'][2])
 
 
 class TestCount(unittest.TestCase):

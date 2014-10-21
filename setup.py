@@ -26,14 +26,14 @@
 from setuptools import setup
 import sys
 
-install_requires=[]
+install_requires = []
 if sys.version_info < (2, 7):
     install_requires += ['argparse']
 
 
 setup(
     name="hprof2flamegraph",
-    version="0.0.1",
+    version="0.0.2",
     author="Clément MATHIEU",
     author_email="clement+flamegraph@unportant.info",
     url="https://github.com/cykl/hprof2flamegraph",
@@ -50,13 +50,13 @@ setup(
         "Topic :: Software Development",
     ],
     install_requires=install_requires,
-    py_modules=["hprof2flamegraph"],
+    py_modules=["stackcollapse_hprof", "stackcollapse_hpl"],
     entry_points={
         'console_scripts': [
-            'hprof2flamegraph = hprof2flamegraph:main',
+            'stackcollapse-hprof = stackcollapse_hprof:main',
+            'stackcollapse-hpl = stackcollapse_hpl:main',
         ]
     },
     scripts=['flamegraph.pl'],
-    test_suite = 'nose.collector'
+    test_suite='nose.collector'
 )
-
