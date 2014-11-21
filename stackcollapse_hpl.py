@@ -83,13 +83,17 @@ def abbreviate_package(class_name):
     return "%s%s" % (shortened_pkg, match_object.group('remainder'))
 
 
-def format_frame(frame, method, discard_lineno, shorten_pkgs):
+def get_method_name(method, shorten_pkgs):
     class_name = method.class_name[1:-1].replace('/', '.')
     if shorten_pkgs:
         class_name = abbreviate_package(class_name)
 
-    formatted_frame = class_name
-    formatted_frame += '.' + method.method_name
+    method_name = class_name
+    method_name += '.' + method.method_name
+    return method_name
+
+def format_frame(frame, method, discard_lineno, shorten_pkgs):
+    formatted_frame = get_method_name(method, shorten_pkgs)
     if not discard_lineno:
         formatted_frame += ':' + str(frame.line_no)
     return formatted_frame
@@ -103,6 +107,8 @@ def main(argv=None, out=sys.stdout):
     parser.add_argument('--discard-lineno', dest='discard_lineno', action='store_true', help='Remove line numbers')
     parser.add_argument('--discard-thread', dest='discard_thread', action='store_true', help='Remove thread info')
     parser.add_argument('--shorten-pkgs', dest='shorten_pkgs', action='store_true', help='Shorten package names')
+    parser.add_argument('--skip-trace-on-missing-frame', dest='skip_trace_on_missing_frame', action='store_true', help='Continue processing even if frames are missing')
+    parser.add_argument('--skip-sleep', dest='skip_sleep', action='store_true', help='Skips frames that include Thread.sleep')
 
     args = parser.parse_args(argv)
     filename = args.hpl_file[0]
@@ -112,13 +118,25 @@ def main(argv=None, out=sys.stdout):
     folded_stacks = collections.defaultdict(int)
 
     for trace in traces:
-        frames = [
-            format_frame(
+        frames = []
+        skip_trace = False
+        for frame in trace.frames:
+            if args.skip_trace_on_missing_frame and not frame.method_id in methods:
+                sys.stderr.write("skipped missing frame %s\n" % frame.method_id)
+                skip_trace = True
+                break
+            if args.skip_sleep and get_method_name(methods[frame.method_id], False) == "java.lang.Thread.sleep":
+                sys.stderr.write("skipped sleep %s\n" % frame.method_id)
+                skip_trace = True
+                break
+            frames.append(format_frame(
                 frame,
                 methods[frame.method_id],
                 args.discard_lineno,
                 args.shorten_pkgs
-            ) for frame in trace.frames]
+            ))
+        if skip_trace == True:
+            continue
 
         if not args.discard_thread:
             frames.append('Thread %s' % trace.thread_id)
