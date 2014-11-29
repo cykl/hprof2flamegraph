@@ -92,6 +92,7 @@ def get_method_name(method, shorten_pkgs):
     method_name += '.' + method.method_name
     return method_name
 
+
 def format_frame(frame, method, discard_lineno, shorten_pkgs):
     formatted_frame = get_method_name(method, shorten_pkgs)
     if not discard_lineno:
@@ -153,3 +154,4 @@ def main(argv=None, out=sys.stdout):
 
 if __name__ == '__main__':
     main()
+
