@@ -136,6 +136,7 @@ def main(argv=None, out=sys.stdout):
                 args.discard_lineno,
                 args.shorten_pkgs
             ))
+
         if skip_trace:
             continue
 
