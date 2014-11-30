@@ -37,20 +37,17 @@ from stackcollapse_hpl import *
 
 
 def get_ref_file(file_name):
-    return os.path.join(
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), os.path.join('ref', 'hpl')),
-        file_name
-    )
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ref', 'hpl', file_name)
 
 
 class AcceptanceTest(unittest.TestCase):
 
-    def run_example_with(self, args=None):
+    def run_example_with(self, hpl_file="example.hpl", args=None):
         if not args:
             args = []
 
         capturer = StringIO()
-        main(argv=[get_ref_file("example.hpl")] + args, out=capturer)
+        main(argv=[get_ref_file(hpl_file)] + args, out=capturer)
         content = capturer.getvalue()
 
         self.lines = [line for line in content.split('\n') if line]
@@ -79,7 +76,7 @@ class AcceptanceTest(unittest.TestCase):
             self.assertTrue(re.match('^Thread \d+.*', line), line)
 
     def test_should_not_contains_threads(self):
-        self.run_example_with(['--discard-thread'])
+        self.run_example_with(args=['--discard-thread'])
 
         for line in self.lines:
             self.assertFalse(re.match('^Thread \d+.*', line), line)
@@ -93,10 +90,32 @@ class AcceptanceTest(unittest.TestCase):
             for frame in collapsed_stack.split(';')[1:]:
                 self.assertTrue(re.match('.*:-?\d+$', frame), frame)
 
+    def test_lineno_should_be_positive(self):
+        self.run_example_with()
+
+        for line in self.lines:
+            (collapsed_stack, _) = line.rsplit(' ', 1)
+            for frame in collapsed_stack.split(';')[1:]:
+                self.assertTrue(re.match('.*:-?\d+$', frame), frame)
+
     def test_should_not_contains_lineno(self):
-        self.run_example_with(['--discard-lineno'])
+        self.run_example_with(args=['--discard-lineno'])
 
         for line in self.lines:
             (collapsed_stack, _) = line.rsplit(' ', 1)
             for frame in collapsed_stack.split(';'):
                 self.assertFalse(re.match('.*:-?\d+$', frame), frame)
+
+    def test_should_fail_on_missing_method(self):
+        self.assertRaisesRegexp(
+            KeyError, "1671214212",
+            self.run_example_with, hpl_file="example-first-method-removed.hpl"
+        )
+
+    def test_should_continue_on_missing_method_when_asked(self):
+        self.run_example_with()
+        complete_lines = self.lines
+
+        self.run_example_with(hpl_file="example-first-method-removed.hpl", args=['--skip-trace-on-missing-frame'])
+        self.assertEqual(complete_lines[1:],  self.lines)
+

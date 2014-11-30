@@ -1,0 +1,1 @@
+This file has been created from example.hpl by removing the first Method in the file using a hexadecimal editor.
