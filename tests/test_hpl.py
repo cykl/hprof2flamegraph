@@ -107,10 +107,13 @@ class AcceptanceTest(unittest.TestCase):
                 self.assertFalse(re.match('.*:-?\d+$', frame), frame)
 
     def test_should_fail_on_missing_method(self):
-        self.assertRaisesRegexp(
-            KeyError, "1671214212",
-            self.run_example_with, hpl_file="example-first-method-removed.hpl"
-        )
+        if self.assertRaisesRegexp:
+            self.assertRaisesRegexp(
+                KeyError, "1671214212",
+                self.run_example_with, hpl_file="example-first-method-removed.hpl"
+            )
+        else:  # Python 2.6
+            self.assertRaises(KeyError, self.run_example_with, hpl_file="example-first-method-removed.hpl")
 
     def test_should_continue_on_missing_method_when_asked(self):
         self.run_example_with()
