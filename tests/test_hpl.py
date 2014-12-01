@@ -116,9 +116,13 @@ class AcceptanceTest(unittest.TestCase):
             self.assertRaises(KeyError, self.run_example_with, hpl_file="example-first-method-removed.hpl")
 
     def test_should_continue_on_missing_method_when_asked(self):
+        import pprint
         self.run_example_with()
         complete_lines = self.lines
+        pprint.pprint(complete_lines)
 
         self.run_example_with(hpl_file="example-first-method-removed.hpl", args=['--skip-trace-on-missing-frame'])
-        self.assertEqual(complete_lines[1:],  self.lines)
+        pprint.pprint(self.lines)
+
+        self.assertEqual(sorted(complete_lines[1:]), sorted(self.lines))
 
