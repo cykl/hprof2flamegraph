@@ -146,7 +146,7 @@ def main(argv=None, out=sys.stdout):
         folded_stack = ';'.join(reversed(frames))
         folded_stacks[folded_stack] += 1
 
-    for folded_stack in folded_stacks:
+    for folded_stack in sorted(folded_stacks):
         sample_count = folded_stacks[folded_stack]
         print("%s %s" % (folded_stack, sample_count), file=out)
 

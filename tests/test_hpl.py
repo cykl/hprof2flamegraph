@@ -124,5 +124,5 @@ class AcceptanceTest(unittest.TestCase):
         self.run_example_with(hpl_file="example-first-method-removed.hpl", args=['--skip-trace-on-missing-frame'])
         pprint.pprint(self.lines)
 
-        self.assertEqual(sorted(complete_lines[1:]), sorted(self.lines))
+        self.assertEqual(complete_lines[:-1], self.lines)
 
