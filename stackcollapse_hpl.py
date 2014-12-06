@@ -109,7 +109,6 @@ def main(argv=None, out=sys.stdout):
     parser.add_argument('--discard-thread', dest='discard_thread', action='store_true', help='Remove thread info')
     parser.add_argument('--shorten-pkgs', dest='shorten_pkgs', action='store_true', help='Shorten package names')
     parser.add_argument('--skip-trace-on-missing-frame', dest='skip_trace_on_missing_frame', action='store_true', help='Continue processing even if frames are missing')
-    parser.add_argument('--skip-sleep', dest='skip_sleep', action='store_true', help='Skips frames that include Thread.sleep')
 
     args = parser.parse_args(argv)
     filename = args.hpl_file[0]
@@ -124,10 +123,6 @@ def main(argv=None, out=sys.stdout):
         for frame in trace.frames:
             if args.skip_trace_on_missing_frame and not frame.method_id in methods:
                 sys.stderr.write("skipped missing frame %s\n" % frame.method_id)
-                skip_trace = True
-                break
-            if args.skip_sleep and get_method_name(methods[frame.method_id], False) == "java.lang.Thread.sleep":
-                sys.stderr.write("skipped sleep %s\n" % frame.method_id)
                 skip_trace = True
                 break
             frames.append(format_frame(
