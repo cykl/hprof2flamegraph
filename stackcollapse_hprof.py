@@ -115,6 +115,8 @@ def get_stacks(content, discard_lineno=False, discard_thread=False, shorten_pkgs
     match_objects = re.finditer(pattern, content, re.M)
     for match_object in match_objects:
         trace_id  = match_object.group('trace_id')
+        if "<empty>" in match_object.group('stack'):
+            continue
         stack     = _process_stack(match_object.group('stack'), discard_lineno, shorten_pkgs)
         thread_id = match_object.group('thread_id')
         if thread_id and not discard_thread:
@@ -160,7 +162,7 @@ def to_flamegraph(stacks, counts):
     Return a list of lines.
     """
     lines = []
-    for id in stacks:
+    for id in counts:
         stack = ";".join(reversed(stacks[id]))
         count = counts[id]
         lines.append('{0} {1}'.format(stack, count))
