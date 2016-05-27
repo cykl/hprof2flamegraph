@@ -23,6 +23,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import division
+
 import os
 import unittest
 
@@ -104,7 +106,7 @@ class AcceptanceTest(unittest.TestCase):
                 else:
                     without_lineno += 1
 
-        self.assertGreater(with_lineno / (with_lineno + without_lineno), 0.85)
+        self.assertTrue((with_lineno / (with_lineno + without_lineno)) > 0.85)
 
     def test_lineno_are_positives(self):
         self.run_example_with(hpl_file="example_with_full_frame.hpl")
