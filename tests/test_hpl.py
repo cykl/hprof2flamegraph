@@ -82,24 +82,40 @@ class AcceptanceTest(unittest.TestCase):
             self.assertFalse(re.match('^Thread \d+.*', line), line)
             self.assertTrue(re.match('^(java|com|Example|sun)', line), line)
 
-    def test_should_contains_lineno(self):
+    def test_standard_frame_does_not_contain_lineno(self):
         self.run_example_with()
 
         for line in self.lines:
             (collapsed_stack, _) = line.rsplit(' ', 1)
             for frame in collapsed_stack.split(';')[1:]:
-                self.assertTrue(re.match('.*:-?\d+$', frame), frame)
+                self.assertFalse(re.match('.*:-?\d+$', frame), frame)
 
-    def test_lineno_should_be_positive(self):
-        self.run_example_with()
+    def test_most_frames_are_full_frame_which_contains_lineno(self):
+        self.run_example_with(hpl_file="example_with_full_frame.hpl")
+
+        with_lineno = 0
+        without_lineno = 0
 
         for line in self.lines:
             (collapsed_stack, _) = line.rsplit(' ', 1)
             for frame in collapsed_stack.split(';')[1:]:
-                self.assertTrue(re.match('.*:-?\d+$', frame), frame)
+                if re.match('.*:\d+$', frame):
+                    with_lineno += 1
+                else:
+                    without_lineno += 1
+
+        self.assertGreater(with_lineno / (with_lineno + without_lineno), 0.85)
+
+    def test_lineno_are_positives(self):
+        self.run_example_with(hpl_file="example_with_full_frame.hpl")
+
+        for line in self.lines:
+            (collapsed_stack, _) = line.rsplit(' ', 1)
+            for frame in collapsed_stack.split(';')[1:]:
+                self.assertFalse(re.match('.*:-\d+$', frame), frame)
 
     def test_should_not_contains_lineno(self):
-        self.run_example_with(args=['--discard-lineno'])
+        self.run_example_with(hpl_file="example_with_full_frame.hpl", args=['--discard-lineno'])
 
         for line in self.lines:
             (collapsed_stack, _) = line.rsplit(' ', 1)

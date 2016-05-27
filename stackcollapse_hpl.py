@@ -33,7 +33,21 @@ import re
 
 Method = collections.namedtuple('Method', ['id', 'file_name', 'class_name', 'method_name'])
 Trace = collections.namedtuple('Trace', ['thread_id', 'frame_count', 'frames'])
-Frame = collections.namedtuple('Frame', ['line_no', 'method_id'])
+Frame = collections.namedtuple('Frame', ['bci', 'line_no', 'method_id'])
+
+AGENT_ERRORS = [
+    "No Java Frames[ERR=0]",
+    "No class load[ERR=-1]",
+    "GC Active[ERR=-2]",
+    "Unknown not Java[ERR=-3]",
+    "Not walkable not Java[ERR=-4]",
+    "Unknown Java[ERR=-5]",
+    "Not walkable Java[ERR=-6]",
+    "Unknown state[ERR=-7]",
+    "Thread exit[ERR=-8]",
+    "Deopt[ERR=-9]",
+    "Safepoint[ERR=-10]",
+]
 
 
 def parse_hpl_string(fh):
@@ -46,6 +60,10 @@ def parse_hpl(filename):
     traces = []
     methods = {}
 
+    for (index, error) in enumerate(AGENT_ERRORS):
+        method_id = -1 - index
+        methods[method_id] = Method(method_id, "", "/Error/", error)
+
     with open(filename, 'rb') as fh:
         while True:
             marker_str = fh.read(1)
@@ -57,10 +75,23 @@ def parse_hpl(filename):
                 break
             elif marker == 1:
                 (frame_count, thread_id) = struct.unpack('>iQ', fh.read(4 + 8))
-                traces.append(Trace(thread_id, frame_count, []))
+                if frame_count > 0:
+                    traces.append(Trace(thread_id, frame_count, []))
+                else:  # Negative frame_count are used to report error
+                    if abs(frame_count) > len(AGENT_ERRORS):
+                        method_id = frame_count - 1
+                        methods[method_id] = Method(method_id, "Unknown err[ERR=%s]" % frame_count)
+                    frame = Frame(None, None, frame_count - 1)
+                    traces.append(Trace(thread_id, 1, [frame]))
             elif marker == 2:
-                (line_no, method_id) = struct.unpack('>iQ', fh.read(4 + 8))
-                frame = Frame(line_no, method_id)
+                (bci, method_id) = struct.unpack('>iQ', fh.read(4 + 8))
+                frame = Frame(bci, None, method_id)
+                traces[-1].frames.append(frame)
+            elif marker == 21:
+                (bci, line_no, method_id) = struct.unpack('>iiQ', fh.read(4 + 4 + 8))
+                if line_no < 0:  # Negative line_no are used to report that line_no is not available (-100 & -101)
+                    line_no = None
+                frame = Frame(bci, line_no, method_id)
                 traces[-1].frames.append(frame)
             elif marker == 3:
                 (method_id,) = struct.unpack('>Q', fh.read(8))
@@ -95,7 +126,7 @@ def get_method_name(method, shorten_pkgs):
 
 def format_frame(frame, method, discard_lineno, shorten_pkgs):
     formatted_frame = get_method_name(method, shorten_pkgs)
-    if not discard_lineno:
+    if not discard_lineno and frame.line_no:
         formatted_frame += ':' + str(frame.line_no)
     return formatted_frame
 
