@@ -2,4 +2,5 @@
 0.0.3-dev:
   - [honest-profiler] Add --skip-trace-on-missing-frame
   - [honest-profiler] Add support of full frame log events (see e9b13fc) 
+  - [flamegraph] Update flamegraph.pl (eaed26b)
 
