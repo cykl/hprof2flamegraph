@@ -1,0 +1,4 @@
+
+0.0.3-dev:
+  - [honest-profiler] Add --skip-trace-on-missing-frame
+

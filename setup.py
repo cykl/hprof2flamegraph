@@ -33,7 +33,7 @@ if sys.version_info < (2, 7):
 
 setup(
     name="hprof2flamegraph",
-    version="0.0.2-dev",
+    version="0.0.3-dev",
     author="Clément MATHIEU",
     author_email="clement+flamegraph@unportant.info",
     url="https://github.com/cykl/hprof2flamegraph",
