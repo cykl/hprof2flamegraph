@@ -33,7 +33,21 @@ import re
 
 Method = collections.namedtuple('Method', ['id', 'file_name', 'class_name', 'method_name'])
 Trace = collections.namedtuple('Trace', ['thread_id', 'frame_count', 'frames'])
-Frame = collections.namedtuple('Frame', ['line_no', 'method_id'])
+Frame = collections.namedtuple('Frame', ['bci', 'line_no', 'method_id'])
+
+AGENT_ERRORS = [
+    "No Java Frames[ERR=0]",
+    "No class load[ERR=-1]",
+    "GC Active[ERR=-2]",
+    "Unknown not Java[ERR=-3]",
+    "Not walkable not Java[ERR=-4]",
+    "Unknown Java[ERR=-5]",
+    "Not walkable Java[ERR=-6]",
+    "Unknown state[ERR=-7]",
+    "Thread exit[ERR=-8]",
+    "Deopt[ERR=-9]",
+    "Safepoint[ERR=-10]",
+]
 
 
 def parse_hpl_string(fh):
@@ -46,6 +60,10 @@ def parse_hpl(filename):
     traces = []
     methods = {}
 
+    for (index, error) in enumerate(AGENT_ERRORS):
+        method_id = -1 - index
+        methods[method_id] = Method(method_id, "", "/Error/", error)
+
     with open(filename, 'rb') as fh:
         while True:
             marker_str = fh.read(1)
@@ -57,10 +75,23 @@ def parse_hpl(filename):
                 break
             elif marker == 1:
                 (frame_count, thread_id) = struct.unpack('>iQ', fh.read(4 + 8))
-                traces.append(Trace(thread_id, frame_count, []))
+                if frame_count > 0:
+                    traces.append(Trace(thread_id, frame_count, []))
+                else:  # Negative frame_count are used to report error
+                    if abs(frame_count) > len(AGENT_ERRORS):
+                        method_id = frame_count - 1
+                        methods[method_id] = Method(method_id, "Unknown err[ERR=%s]" % frame_count)
+                    frame = Frame(None, None, frame_count - 1)
+                    traces.append(Trace(thread_id, 1, [frame]))
             elif marker == 2:
-                (line_no, method_id) = struct.unpack('>iQ', fh.read(4 + 8))
-                frame = Frame(line_no, method_id)
+                (bci, method_id) = struct.unpack('>iQ', fh.read(4 + 8))
+                frame = Frame(bci, None, method_id)
+                traces[-1].frames.append(frame)
+            elif marker == 21:
+                (bci, line_no, method_id) = struct.unpack('>iiQ', fh.read(4 + 4 + 8))
+                if line_no < 0:  # Negative line_no are used to report that line_no is not available (-100 & -101)
+                    line_no = None
+                frame = Frame(bci, line_no, method_id)
                 traces[-1].frames.append(frame)
             elif marker == 3:
                 (method_id,) = struct.unpack('>Q', fh.read(8))
@@ -83,14 +114,19 @@ def abbreviate_package(class_name):
     return "%s%s" % (shortened_pkg, match_object.group('remainder'))
 
 
-def format_frame(frame, method, discard_lineno, shorten_pkgs):
+def get_method_name(method, shorten_pkgs):
     class_name = method.class_name[1:-1].replace('/', '.')
     if shorten_pkgs:
         class_name = abbreviate_package(class_name)
 
-    formatted_frame = class_name
-    formatted_frame += '.' + method.method_name
-    if not discard_lineno:
+    method_name = class_name
+    method_name += '.' + method.method_name
+    return method_name
+
+
+def format_frame(frame, method, discard_lineno, shorten_pkgs):
+    formatted_frame = get_method_name(method, shorten_pkgs)
+    if not discard_lineno and frame.line_no:
         formatted_frame += ':' + str(frame.line_no)
     return formatted_frame
 
@@ -103,6 +139,7 @@ def main(argv=None, out=sys.stdout):
     parser.add_argument('--discard-lineno', dest='discard_lineno', action='store_true', help='Remove line numbers')
     parser.add_argument('--discard-thread', dest='discard_thread', action='store_true', help='Remove thread info')
     parser.add_argument('--shorten-pkgs', dest='shorten_pkgs', action='store_true', help='Shorten package names')
+    parser.add_argument('--skip-trace-on-missing-frame', dest='skip_trace_on_missing_frame', action='store_true', help='Continue processing even if frames are missing')
 
     args = parser.parse_args(argv)
     filename = args.hpl_file[0]
@@ -112,13 +149,22 @@ def main(argv=None, out=sys.stdout):
     folded_stacks = collections.defaultdict(int)
 
     for trace in traces:
-        frames = [
-            format_frame(
+        frames = []
+        skip_trace = False
+        for frame in trace.frames:
+            if args.skip_trace_on_missing_frame and not frame.method_id in methods:
+                sys.stderr.write("skipped missing frame %s\n" % frame.method_id)
+                skip_trace = True
+                break
+            frames.append(format_frame(
                 frame,
                 methods[frame.method_id],
                 args.discard_lineno,
                 args.shorten_pkgs
-            ) for frame in trace.frames]
+            ))
+
+        if skip_trace:
+            continue
 
         if not args.discard_thread:
             frames.append('Thread %s' % trace.thread_id)
@@ -126,7 +172,7 @@ def main(argv=None, out=sys.stdout):
         folded_stack = ';'.join(reversed(frames))
         folded_stacks[folded_stack] += 1
 
-    for folded_stack in folded_stacks:
+    for folded_stack in sorted(folded_stacks):
         sample_count = folded_stacks[folded_stack]
         print("%s %s" % (folded_stack, sample_count), file=out)
 
@@ -135,3 +181,4 @@ def main(argv=None, out=sys.stdout):
 
 if __name__ == '__main__':
     main()
+
