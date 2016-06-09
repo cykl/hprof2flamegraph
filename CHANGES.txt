@@ -1,4 +1,5 @@
 0.0.4:
+  - [Pypi] Add missing description to setup.py
 
 0.0.3: (2016-06-07)
   - [honest-profiler] Add --skip-trace-on-missing-frame
