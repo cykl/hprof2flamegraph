@@ -73,8 +73,11 @@ def parse_hpl(filename):
             (marker,) = struct.unpack('>b', marker_str)
             if marker == 0:
                 break
-            elif marker == 1:
+            elif marker == 1 or marker == 11:
                 (frame_count, thread_id) = struct.unpack('>iQ', fh.read(4 + 8))
+                # marker is 11, read the time
+                if marker == 11:
+                    (time_sec, time_nano) = struct.unpack('>QQ', fh.read(8+8))
                 if frame_count > 0:
                     traces.append(Trace(thread_id, frame_count, []))
                 else:  # Negative frame_count are used to report error
@@ -99,6 +102,9 @@ def parse_hpl(filename):
                 class_name = parse_hpl_string(fh)
                 method_name = parse_hpl_string(fh)
                 methods[method_id] = Method(method_id, file_name, class_name, method_name)
+            elif marker == 4: # 4 means thread meta, not useful in flame graph
+                (thread_id,) = struct.unpack('>Q', fh.read(8))
+                thread_name = parse_hpl_string(fh)
             else:
                 raise Exception("Unexpected marker: %s at offset %s" % (marker, fh.tell()))
 
