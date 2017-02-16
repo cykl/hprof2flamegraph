@@ -1,3 +1,6 @@
+0.0.5: (2017-02-16)
+  - [honest-profiler] Add support of THREAD_META marker (see bbc0306 and 3776ddb)
+
 0.0.4: (2016-06-09)
   - [Pypi] Add missing description to setup.py
 

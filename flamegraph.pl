@@ -341,7 +341,7 @@ sub color {
 
 	# multi palettes
 	if (defined $type and $type eq "java") {
-		if ($name =~ m:(/|\.):) {		# Java (match "/" in path)
+		if ($name =~ m:/:) {		# Java (match "/" in path)
 			$type = "green";
 			$type = "aqua" if $name =~ m/_\[i\]/; #inline
 		} elsif ($name =~ /::/) {	# C++
@@ -570,22 +570,19 @@ foreach (sort @Data) {
 		$maxdelta = abs($delta) if abs($delta) > $maxdelta;
 	}
 
-	# clean up SVG breaking characters:
-	$stack =~ tr/<>/()/;
-
 	# for chain graphs, annotate waker frames with "_[w]", for later
 	# coloring. This is a hack, but has a precedent ("_[k]" from perf).
 	if ($colors eq "chain") {
-		my @parts = split ";-;", $stack;
+		my @parts = split ";--;", $stack;
 		my @newparts = ();
 		$stack = shift @parts;
-		$stack .= ";-;";
+		$stack .= ";--;";
 		foreach my $part (@parts) {
 			$part =~ s/;/_[w];/g;
 			$part .= "_[w]";
 			push @newparts, $part;
 		}
-		$stack .= join ";-;", @parts;
+		$stack .= join ";--;", @parts;
 	}
 
 	# merge frames and populate %Node:
@@ -971,11 +968,12 @@ my $inc = <<INC;
 INC
 $im->include($inc);
 $im->filledRectangle(0, 0, $imagewidth, $imageheight, 'url(#background)');
-my ($white, $black, $vvdgrey, $vdgrey) = (
+my ($white, $black, $vvdgrey, $vdgrey, $dgrey) = (
 	$im->colorAllocate(255, 255, 255),
 	$im->colorAllocate(0, 0, 0),
 	$im->colorAllocate(40, 40, 40),
 	$im->colorAllocate(160, 160, 160),
+	$im->colorAllocate(200, 200, 200),
     );
 $im->stringTTF($black, $fonttype, $fontsize + 5, 0.0, int($imagewidth / 2), $fontsize * 2, $titletext, "middle");
 $im->stringTTF($black, $fonttype, $fontsize, 0.0, $xpad, $imageheight - ($ypad2 / 2), " ", "", 'id="details"');
@@ -1018,6 +1016,7 @@ while (my ($id, $node) = each %Node) {
 	} else {
 		my $pct = sprintf "%.2f", ((100 * $samples) / ($timemax * $factor));
 		my $escaped_func = $func;
+		# clean up SVG breaking characters:
 		$escaped_func =~ s/&/&amp;/g;
 		$escaped_func =~ s/</&lt;/g;
 		$escaped_func =~ s/>/&gt;/g;
@@ -1042,8 +1041,10 @@ while (my ($id, $node) = each %Node) {
 	$im->group_start($nameattr);
 
 	my $color;
-	if ($func eq "-") {
+	if ($func eq "--") {
 		$color = $vdgrey;
+	} elsif ($func eq "-") {
+		$color = $dgrey;
 	} elsif (defined $delta) {
 		$color = color_scale($delta, $maxdelta);
 	} elsif ($palette) {
