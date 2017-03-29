@@ -47,16 +47,17 @@ Usage example:
 """
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import re
 import sys
+from io import open
 
 
 def get_file_content(filename):
     """ Return the content of filename as a single string"""
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-        return "".join(lines)
+    with open(filename, encoding='utf-8') as f:
+        return f.read()
 
 
 def header_match(line):

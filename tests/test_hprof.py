@@ -23,6 +23,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import unicode_literals
+
 import os
 import unittest
 
@@ -120,6 +122,11 @@ class TestParsing(unittest.TestCase):
         content = get_file_content(filename)
         counts = get_counts(content)
         self.assertEquals(0, len(counts))
+
+    def test_can_read_utf8(self):
+        filename = os.path.join(REF_DIR, 'with_non_ascii_identifier.hprof.txt')
+        content = get_file_content(filename)
+        self.assertTrue("récursif" in content)
 
 
 class TestStack(unittest.TestCase):
@@ -223,3 +230,8 @@ class TestEndToEnd(unittest.TestCase):
             'java.lang.ClassLoader.defineClass1 8',
         ])
         self.assertTrue(any(line.endswith(ref) for line in lines))
+
+    def test_do_not_crash_when_reading_non_ascii_identifiers(self):
+        capturer = StringIO()
+        main(argv=[os.path.join(REF_DIR, 'with_non_ascii_identifier.hprof.txt')], out=capturer)
+
