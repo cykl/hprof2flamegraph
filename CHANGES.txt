@@ -1,4 +1,7 @@
-0.0.6:
+0.0.7:
+
+0.0.6: (2017-03-29)
+  - [hprof] Add support of non ASCII identifiers
 
 0.0.5: (2017-02-16)
   - [honest-profiler] Add support of THREAD_META marker (see bbc0306 and 3776ddb)

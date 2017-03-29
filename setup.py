@@ -34,7 +34,7 @@ if sys.version_info < (2, 7):
 setup(
     name="hprof2flamegraph",
     description="Java Flame Graphs",
-    version="0.0.6-dev",
+    version="0.0.7-dev",
     author="Clément MATHIEU",
     author_email="clement+flamegraph@unportant.info",
     url="https://github.com/cykl/hprof2flamegraph",
