@@ -1,4 +1,5 @@
 0.0.7:
+  - [hprof] Add support of NEW_METHOD_SIGNATURE marker
 
 0.0.6: (2017-03-29)
   - [hprof] Add support of non ASCII identifiers

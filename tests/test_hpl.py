@@ -140,3 +140,27 @@ class AcceptanceTest(unittest.TestCase):
         self.run_example_with(hpl_file="example-first-method-removed.hpl", args=['--skip-trace-on-missing-frame'])
         self.assertEqual(complete_lines[:-1], self.lines)
 
+    def test_most_new_method_signatures_frames_contains_lineno(self):
+        self.run_example_with(hpl_file="example_with_new_method_signature.hpl")
+
+        with_lineno = 0
+        without_lineno = 0
+
+        for line in self.lines:
+            (collapsed_stack, _) = line.rsplit(' ', 1)
+            for frame in collapsed_stack.split(';')[1:]:
+                if re.match('.*:\d+$', frame):
+                    with_lineno += 1
+                else:
+                    without_lineno += 1
+
+        self.assertTrue((with_lineno / (with_lineno + without_lineno)) > 0.85)
+
+    def test_new_method_signatures_have_positive_lineno(self):
+        self.run_example_with(hpl_file="example_with_new_method_signature.hpl")
+
+        for line in self.lines:
+            (collapsed_stack, _) = line.rsplit(' ', 1)
+            for frame in collapsed_stack.split(';')[1:]:
+                self.assertFalse(re.match('.*:-\d+$', frame), frame)
+

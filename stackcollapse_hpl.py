@@ -102,6 +102,15 @@ def parse_hpl(filename):
                 class_name = parse_hpl_string(fh)
                 method_name = parse_hpl_string(fh)
                 methods[method_id] = Method(method_id, file_name, class_name, method_name)
+            elif marker == 31:
+                (method_id,) = struct.unpack('>Q', fh.read(8))
+                file_name = parse_hpl_string(fh)
+                class_name = parse_hpl_string(fh)
+                class_name_generic = parse_hpl_string(fh)
+                method_name = parse_hpl_string(fh)
+                method_signature = parse_hpl_string(fh)
+                method_signature_generic = parse_hpl_string(fh)
+                methods[method_id] = Method(method_id, file_name, class_name, method_name)
             elif marker == 4: # 4 means thread meta, not useful in flame graph
                 (thread_id,) = struct.unpack('>Q', fh.read(8))
                 thread_name = parse_hpl_string(fh)
