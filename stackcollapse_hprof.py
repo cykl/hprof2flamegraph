@@ -198,7 +198,7 @@ def main(argv=None, out=sys.stdout):
         sys.exit('Failed to get samples.')
 
     for line in to_flamegraph(stacks, counts):
-        print(line, file=out)
+        print(line.encode('utf-8'), file=out)
 
     return 0
 
